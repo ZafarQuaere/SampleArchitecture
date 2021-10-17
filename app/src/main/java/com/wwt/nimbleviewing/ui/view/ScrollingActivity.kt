@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -20,6 +21,7 @@ import com.wwt.nimbleviewing.utils.Status
 import com.wwt.nimbleviewing.viewmodel.ApiViewModel
 import kotlinx.android.synthetic.main.activity_scrolling.*
 import kotlinx.android.synthetic.main.content_scrolling.*
+import kotlinx.android.synthetic.main.content_scrolling.view.*
 
 class ScrollingActivity : AppCompatActivity() {
     private lateinit var listAdapter: AlbumListAdapter
@@ -31,8 +33,8 @@ class ScrollingActivity : AppCompatActivity() {
             setContentView(root)
             setSupportActionBar(toolbar)
             setUpViewModel()
-            setupObservers()
-            setupUI()
+            setupObservers(root)
+            setupUI(root)
 
             toolbarLayout.title = this@ScrollingActivity.title
 
@@ -46,17 +48,18 @@ class ScrollingActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupUI() {
-        album_list.layoutManager = LinearLayoutManager(this)
+    private fun setupUI(root: CoordinatorLayout) {
+        root.album_list.layoutManager = LinearLayoutManager(this)
+//        album_list.layoutManager = LinearLayoutManager(this)
         listAdapter = AlbumListAdapter(arrayListOf())
-        album_list.adapter = listAdapter
-        album_list.addItemDecoration(
+        root.album_list.adapter = listAdapter
+        root.album_list.addItemDecoration(
             DividerItemDecoration(
-                album_list.context,
-                (album_list.layoutManager as LinearLayoutManager).orientation
+                root.album_list.context,
+                (root.album_list.layoutManager as LinearLayoutManager).orientation
             )
         )
-        album_list.adapter = listAdapter
+        root.album_list.adapter = listAdapter
     }
 
     private fun setUpViewModel() {
@@ -66,23 +69,23 @@ class ScrollingActivity : AppCompatActivity() {
         ).get(ApiViewModel::class.java)
     }
 
-    private fun setupObservers() {
+    private fun setupObservers(root: CoordinatorLayout) {
         viewModel.getData().observe(this, Observer {
             it?.let { resource ->
                 when (resource.status) {
                     Status.SUCCESS -> {
-                        album_list.visibility = View.VISIBLE
+                        root.album_list.visibility = View.VISIBLE
                         progressBar.visibility = View.GONE
                         resource.data?.let { users -> retrieveList(users) }
                     }
                     Status.ERROR -> {
-                        album_list.visibility = View.VISIBLE
+                        root.album_list.visibility = View.VISIBLE
                         progressBar.visibility = View.GONE
                         Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
                     }
                     Status.LOADING -> {
                         progressBar.visibility = View.VISIBLE
-                        album_list.visibility = View.GONE
+                        root.album_list.visibility = View.GONE
                     }
                 }
             }
